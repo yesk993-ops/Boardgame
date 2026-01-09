@@ -33,7 +33,10 @@ pipeline {
             steps {
                 withSonarQubeEnv('sonar-server') {
                     sh '''
-                    $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=BoardGame -Dsonar.projectKey=BoardGame -Dsonar.java.binaries=.
+                    $SCANNER_HOME/bin/sonar-scanner \
+                      -Dsonar.projectName=BoardGame \
+                      -Dsonar.projectKey=BoardGame \
+                      -Dsonar.java.binaries=.
                     '''
                 }
             }
@@ -52,8 +55,14 @@ pipeline {
         }
         stage('Publish Artifacts to Nexus') {
             steps {
-                withMaven(globalMavenSettingsConfig: 'global-settings', jdk: 'jdk17', maven: 'maven3', mavenSettingsConfig: '', traceability: true) {
-                    sh "mvn deploy"
+                withCredentials([usernamePassword(credentialsId: 'nexus-cred',
+                                                 usernameVariable: 'NEXUS_USER',
+                                                 passwordVariable: 'NEXUS_PASS')]) {
+                    sh """
+                        mvn deploy -U \
+                          -Dnexus.username=$NEXUS_USER \
+                          -Dnexus.password=$NEXUS_PASS
+                    """
                 }
             }
         }
