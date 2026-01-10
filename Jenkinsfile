@@ -87,7 +87,7 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
+                    withDockerRegistry(credentialsId: 'dockerhub-credentials', toolName: 'docker') {
                         sh "docker push mydocker3692/boardgame:latest"
                     }
                 }
