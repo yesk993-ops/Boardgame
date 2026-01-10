@@ -89,7 +89,10 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                withDockerRegistry(credentialsId: 'dockerhub-credentials') {
+                withDockerRegistry(
+                    credentialsId: 'dockerhub-credentials',
+                    url: 'https://index.docker.io/v1/'
+                ) {
                     sh "docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} ."
                 }
             }
@@ -103,7 +106,10 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
-                withDockerRegistry(credentialsId: 'dockerhub-credentials') {
+                withDockerRegistry(
+                    credentialsId: 'dockerhub-credentials',
+                    url: 'https://index.docker.io/v1/'
+                ) {
                     sh "docker push ${IMAGE_NAME}:${BUILD_NUMBER}"
                 }
             }
