@@ -69,7 +69,7 @@ pipeline {
         stage('Build and Tag Docker Image') {
             steps {
                 script {
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
+                    withDockerRegistry(credentialsId: 'dockerhub-credentials', toolName: 'docker') {
                         sh "docker build -t mydocker3692/Boardgame:latest ."
                     }
                 }
