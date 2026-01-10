@@ -89,7 +89,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                withDockerRegistry(credentialsId: 'dockerhub-credentials', toolName: 'docker') {
+                withDockerRegistry(credentialsId: 'dockerhub-credentials') {
                     sh "docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} ."
                 }
             }
@@ -103,7 +103,7 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
-                withDockerRegistry(credentialsId: 'dockerhub-credentials', toolName: 'docker') {
+                withDockerRegistry(credentialsId: 'dockerhub-credentials') {
                     sh "docker push ${IMAGE_NAME}:${BUILD_NUMBER}"
                 }
             }
@@ -121,7 +121,7 @@ pipeline {
                 git config user.email "jenkins@local"
                 git config user.name "jenkins"
                 git status
-                git commit -am "chore: update image to ${BUILD_NUMBER}"
+                git commit -am "chore: update image to ${BUILD_NUMBER}" || echo "No changes to commit"
                 git push origin main
                 """
             }
