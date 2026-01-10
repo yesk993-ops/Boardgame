@@ -14,7 +14,13 @@ pipeline {
 
     stages {
 
-        stage('Git Checkout') {
+        stage('Clean Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+
+        stage('Checkout Source Code') {
             steps {
                 git branch: 'main',
                     credentialsId: 'git-cred',
@@ -24,19 +30,19 @@ pipeline {
 
         stage('Compile') {
             steps {
-                sh "mvn compile"
+                sh 'mvn compile'
             }
         }
 
         stage('Test') {
             steps {
-                sh "mvn test"
+                sh 'mvn test'
             }
         }
 
         stage('Trivy File System Scan') {
             steps {
-                sh "trivy fs --format table -o trivy-fs-report.html ."
+                sh 'trivy fs --format table -o trivy-fs-report.html .'
             }
         }
 
@@ -44,7 +50,7 @@ pipeline {
             steps {
                 withSonarQubeEnv('sonar-server') {
                     sh """
-                    $SCANNER_HOME/bin/sonar-scanner \
+                    ${SCANNER_HOME}/bin/sonar-scanner \
                       -Dsonar.projectName=BoardGame \
                       -Dsonar.projectKey=BoardGame \
                       -Dsonar.java.binaries=.
@@ -59,9 +65,9 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Build Package') {
             steps {
-                sh "mvn package"
+                sh 'mvn package'
             }
         }
 
@@ -83,10 +89,8 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    withDockerRegistry(credentialsId: 'dockerhub-credentials', toolName: 'docker') {
-                        sh "docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} ."
-                    }
+                withDockerRegistry(credentialsId: 'dockerhub-credentials', toolName: 'docker') {
+                    sh "docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} ."
                 }
             }
         }
@@ -99,34 +103,27 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
-                script {
-                    withDockerRegistry(credentialsId: 'dockerhub-credentials', toolName: 'docker') {
-                        sh "docker push ${IMAGE_NAME}:${BUILD_NUMBER}"
-                    }
+                withDockerRegistry(credentialsId: 'dockerhub-credentials', toolName: 'docker') {
+                    sh "docker push ${IMAGE_NAME}:${BUILD_NUMBER}"
                 }
             }
         }
 
         stage('Update GitOps Manifest (Trigger Argo CD)') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'git-cred',
-                    usernameVariable: 'GIT_USER',
-                    passwordVariable: 'GIT_PASS'
-                )]) {
+                dir("${GITOPS_PATH}") {
                     sh """
-                    git clone https://github.com/yesk993-ops/Boardgame.git gitops
-                    cd gitops/${GITOPS_PATH}
-
                     sed -i 's|image: .*|image: ${IMAGE_NAME}:${BUILD_NUMBER}|' deployment.yaml
-
-                    git config user.email "jenkins@local"
-                    git config user.name "jenkins"
-
-                    git commit -am "Update image to ${BUILD_NUMBER}"
-                    git push https://${GIT_USER}:${GIT_PASS}@github.com/yesk993-ops/Boardgame.git main
                     """
                 }
+
+                sh """
+                git config user.email "jenkins@local"
+                git config user.name "jenkins"
+                git status
+                git commit -am "chore: update image to ${BUILD_NUMBER}"
+                git push origin main
+                """
             }
         }
     }
