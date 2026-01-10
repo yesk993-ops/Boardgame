@@ -70,7 +70,7 @@ pipeline {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'dockerhub-credentials', toolName: 'docker') {
-                        sh "docker build -t mydocker3692/Boardgame:latest ."
+                        sh "docker build -t mydocker3692/boardgame:latest ."
                     }
                 }
             }
@@ -79,7 +79,7 @@ pipeline {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'dockerhub-credentials', toolName: 'docker') {
-                        sh "trivy image --format table -o trivy-image-report.html mydocker3692/Boardgame:latest"
+                        sh "trivy image --format table -o trivy-image-report.html mydocker3692/boardgame:latest"
                     }
                 }
             }
@@ -88,7 +88,7 @@ pipeline {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        sh "docker push mydocker3692/Boardgame:latest"
+                        sh "docker push mydocker3692/boardgame:latest"
                     }
                 }
             }
