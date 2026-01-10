@@ -95,34 +95,10 @@ pipeline {
         }
         stage('Deploy to Kubernetes') {
             steps {
-                withKubeConfig(caCertificate: '', clusterName: 'kubernetes', contextName: '', credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false, serverUrl: 'https://172.31.8.22:6443') {
+                withKubeConfig
                     sh "kubectl apply -f deployment-service.yaml"
                     sh "kubectl get pods -n webapps"
                 }
-            }
-        }
-    }
-    post {
-        always {
-            script {
-                def jobName = env.JOB_NAME
-                def buildNumber = env.BUILD_NUMBER
-                def pipelineStatus = currentBuild.result ?: 'UNKNOWN'
-                def bannerColor = pipelineStatus.toUpperCase() == 'SUCCESS' ? 'green' : 'red'
-                def body = """
-                ${jobName} - Build ${buildNumber}
-                Pipeline Status: ${pipelineStatus.toUpperCase()}
-                Check the console output.
-                """
-                emailext(
-                    subject: "${jobName} - Build ${buildNumber} - ${pipelineStatus.toUpperCase()}",
-                    body: body,
-                    to: 'yesk993@gmail.com',
-                    from: 'jenkins@example.com',
-                    replyTo: 'jenkins@example.com',
-                    mimeType: 'text/html',
-                    attachmentsPattern: 'trivy-image-report.html'
-                )
             }
         }
     }
