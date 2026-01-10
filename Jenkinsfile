@@ -95,8 +95,8 @@ pipeline {
         }
         stage('Deploy to Kubernetes') {
             steps {
-                sh "kubectl apply -f deployment-service.yaml -n webapps"
-                sh "kubectl get pods -n webapps"
+                sh "kubectl apply -f deployment-service.yaml"
+                sh "kubectl get pods "
             }
         }
     }
