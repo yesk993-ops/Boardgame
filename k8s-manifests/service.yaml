@@ -9,5 +9,5 @@ spec:
     - protocol: TCP           # Protocol used
       port: 80                # Service port exposed
       targetPort: 8080        # Container port to forward traffic to
-      nodePort: 30010         # Optional: must be in 30000–32767 range
+      nodePort: 30012         # Optional: must be in 30000–32767 range
   type: NodePort              # Service type (case-sensitive!)
